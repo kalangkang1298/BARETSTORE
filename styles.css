@@ -458,8 +458,8 @@ button:hover {
     }
 
     .ebook-image {
-        width: fit-content;
-        height: 160px;
+      max-width: 100%;
+      height: auto;
     }
 
     /* Adjust text size for smaller screens */
@@ -510,8 +510,8 @@ button:hover {
     }
 
     .ebook-image {
-        width: fit-content;
-        height: 150px;
+      max-width: 100%;
+      height: auto;
     }
 
     /* Adjust text size for tablets */
@@ -546,8 +546,8 @@ button:hover {
     }
 
     .ebook-image {
-        width: fit-content;
-        height: 180px;
+      max-width: 100%;
+      height: auto;
     }
     #searchInput {
         width: 30%;
