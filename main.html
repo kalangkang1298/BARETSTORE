@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eBooks List with Pagination</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+  <body>
+    <h1>Baret Store</h1>
+
+    <div id="searchContainer">
+      <input type="text" id="searchInput" placeholder="Search by name..." />
+      <button id="cartButton">
+        <i class="fas fa-bookmark"
+          ><span id="cartBadge" class="badge">0</span></i
+        >
+      </button>
+    </div>
+
+    <div id="ebookContainer"></div>
+
+    <div id="paginationContainer"></div>
+
+    <div id="ebookModal" class="modal">
+      <div class="modal-content">
+        <span id="close" class="close">&times;</span>
+        <img id="modalImage" class="modal-image" src="" alt="Ebook Cover" />
+        <h3 id="modalTitle"></h3>
+        <p id="modalSku"></p>
+        <p id="modalPrice"></p>
+        <button id="addToCartButton" class="btn">
+          <i class="fas fa-bookmark"></i>
+          <p id="addToCartText">Tambahkan</p>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+      <div class="modal-content">
+        <span id="closeCartModal" class="close">&times;</span>
+        <h2>Daftar Ebook</h2>
+        <table id="cartItemsTable">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Name</th>
+              <th>Action</th>
+              <!-- Kolom baru untuk tombol Delete -->
+            </tr>
+          </thead>
+          <tbody id="cartItemsList">
+            <!-- Cart items will be inserted here -->
+          </tbody>
+        </table>
+        <span
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span id="totalPrice" class="total-price"></span>
+          <button id="copyButton" disabled>Copy SKU</button>
+        </span>
+      </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+      const ebookContainer = document.getElementById("ebookContainer");
+      const searchInput = document.getElementById("searchInput");
+      const paginationContainer = document.getElementById(
+        "paginationContainer"
+      );
+
+      const itemsPerPage = 10;
+      let currentPage = 1;
+      let filteredEbooks = jsonData;
+      let cart = []; // Array untuk menyimpan SKU ebook yang dipilih
+      // Modal Elements
+      const modal = document.getElementById("ebookModal");
+      const modalImage = document.getElementById("modalImage");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalPrice = document.getElementById("modalPrice");
+      const modalSku = document.getElementById("modalSku");
+      const addToCartButton = document.getElementById("addToCartButton");
+      const closeModalButton = document.querySelector(".close");
+      const cartModal = document.getElementById("cartModal");
+      const cartItemsList = document.getElementById("cartItemsList");
+      const closeCartModalButton = document.getElementById("closeCartModal");
+      const copyButton = document.getElementById("copyButton");
+
+      //#region ButtonCart
+      // Event listener for cart button
+      document.getElementById("cartButton").addEventListener("click", () => {
+        showCartModal();
+      });
+      // Function to show cart modal
+      // Function to show cart modal
+      function showCartModal() {
+        cartItemsList.innerHTML = ""; // Clear previous list
+
+        // Check if cart is empty
+        if (cart.length === 0) {
+          cartItemsList.innerHTML =
+            "<tr><td colspan='3'>Kamu belum pilih Ebook</td></tr>";
+        } else {
+          // Loop through the cart array and display each item
+          cart.forEach((sku) => {
+            const ebook = jsonData.find((item) => item.sku === sku);
+            if (ebook) {
+              const row = document.createElement("tr");
+
+              const skuCell = document.createElement("td");
+              skuCell.textContent = ebook.sku;
+
+              const nameCell = document.createElement("td");
+              nameCell.textContent = ebook.name;
+
+              const actionCell = document.createElement("td");
+              const deleteButton = document.createElement("button");
+              deleteButton.textContent = "Delete";
+              deleteButton.className = "delete-button";
+              deleteButton.addEventListener("click", () =>
+                removeFromCart(ebook.sku)
+              ); // Attach delete function
+              actionCell.appendChild(deleteButton);
+
+              row.appendChild(skuCell);
+              row.appendChild(nameCell);
+              row.appendChild(actionCell);
+
+              cartItemsList.appendChild(row); // Add the row to the table
+            }
+          });
+        }
+
+        // Show the cart modal
+        cartModal.style.display = "block";
+      }
+
+      // Function to remove item from cart
+      function removeFromCart(sku) {
+        const index = cart.indexOf(sku);
+        if (index !== -1) {
+          cart.splice(index, 1); // Remove SKU from cart
+        }
+        // Find the row associated with the SKU and remove it from the table
+        const rows = cartItemsList.getElementsByTagName("tr");
+        for (let row of rows) {
+          const skuCell = row.getElementsByTagName("td")[0];
+          if (skuCell && skuCell.textContent == sku) {
+            renderEbooks(filteredEbooks.slice(0, itemsPerPage));
+            row.remove(); // Remove the row from the table
+            break;
+          }
+        }
+        updateTotalPrice();
+        updateCopyButtonState(); // Update status copyButton after removal
+        updateCartBadge(); // Update the cart badge
+        //showCartModal(); // Re-render cart modal to reflect the change
+      }
+      // Event listener for closing cart modal
+      closeCartModalButton.addEventListener("click", closeCartModal);
+
+      // Function to close the cart modal
+      function closeCartModal() {
+        renderEbooks(filteredEbooks.slice(0, itemsPerPage));
+        cartModal.style.display = "none";
+      }
+
+      // Event listener for clicking outside the modal content to close it
+      cartModal.addEventListener("click", function (event) {
+        if (event.target === cartModal) {
+          closeCartModal();
+        }
+      });
+      // Modal untuk pesan sukses
+      const successModal = document.createElement("div");
+      successModal.classList.add("success-modal");
+      successModal.innerHTML = `
+        <div class="success-modal-content">
+            <span class="close-success-modal">&times;</span>
+             <div class="check-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <p>SKU berhasil dicopy ke clipboard!</p>
+        </div>
+        `;
+
+      // Tambahkan modal sukses ke body
+      document.body.appendChild(successModal);
+
+      // Tombol Copy SKU
+      copyButton.addEventListener("click", () => {
+        if (cart.length === 0) {
+          alert("Your cart is empty!"); // Tampilkan alert jika keranjang kosong
+          return;
+        }
+
+        // Membuat string berisi SKU yang ada dalam keranjang
+        const skuList = cart
+          .map((sku) => {
+            const ebook = jsonData.find((item) => item.sku === sku);
+            return ebook ? ebook.sku : null;
+          })
+          .filter((sku) => sku !== null)
+          .join(", ");
+
+        // Salin daftar SKU ke clipboard
+        navigator.clipboard
+          .writeText(skuList)
+          .then(() => {
+            // Tampilkan modal sukses
+            successModal.style.display = "block";
+
+            // Tutup modal setelah 3 detik
+            setTimeout(() => {
+              successModal.style.display = "none";
+            }, 2000); // 2 detik (2000ms)
+          })
+          .catch((err) => {
+            console.error("Failed to copy text: ", err);
+            alert("Failed to copy SKUs");
+          });
+      });
+      // Tombol untuk menutup modal sukses
+      const closeSuccessModalButton = document.querySelector(
+        ".close-success-modal"
+      );
+      closeSuccessModalButton.addEventListener("click", () => {
+        successModal.style.display = "none";
+      });
+
+      function updateCopyButtonState() {
+        // Menonaktifkan copyButton jika cart kosong, sebaliknya aktifkan
+        copyButton.disabled = cart.length === 0;
+      }
+
+      //#endregion
+      //#region Function to render the eBook cards
+      function renderEbooks(ebooks) {
+        successModal.style.display = "none";
+        ebookContainer.innerHTML = ""; // Clear current ebooks
+        ebooks.forEach((ebook) => {
+          const ebookCard = document.createElement("div");
+          ebookCard.className = "ebook-card";
+          ebookCard.innerHTML = `
+            <img src="${ebook.image_url}" alt="${ebook.name}" class="ebook-image" />
+            <div class="ebook-details">
+                <h3>${ebook.sku}. ${ebook.name}</h3>
+                <div class="button-group">
+                    <button class="view-details-button">View Details</button>
+                    <button class="bookmark-button" data-sku="${ebook.sku}">
+                        <i class="fas fa-bookmark"></i> Bookmark
+                    </button>
+                </div>
+            </div>
+        `;
+          ebookContainer.appendChild(ebookCard);
+          // Add event listener for the "View Details" button
+          const viewDetailsButton = ebookCard.querySelector(
+            ".view-details-button"
+          );
+          const bookmarkButton = ebookCard.querySelector(".bookmark-button");
+          if (cart.includes(ebook.sku)) {
+            bookmarkButton.style.backgroundColor = "#28a745";
+          } else {
+            bookmarkButton.style.backgroundColor = "#007bff";
+          }
+          viewDetailsButton.addEventListener("click", () => showModal(ebook));
+
+          // Event listener for bookmark button
+          bookmarkButton.addEventListener("click", () =>
+            toggleBookmark(ebook.sku)
+          );
+        });
+      }
+
+      // Function to calculate and update the total price of items in the cart
+      function updateTotalPrice() {
+        // Menghitung total harga berdasarkan SKU yang ada di dalam keranjang
+        let total = 0;
+        cart.forEach((sku) => {
+          const ebook = jsonData.find((item) => item.sku === sku);
+          if (ebook) {
+            total += parseInt(ebook.price); // Menambahkan harga ebook ke total
+          }
+        });
+
+        // Menampilkan total harga pada elemen yang sudah kita buat
+        const totalPriceElement = document.getElementById("totalPrice");
+        totalPriceElement.textContent = `Admin : Rp. ${total}`; // Format harga dengan dua angka desimal
+      }
+      //#endregion
+
+      // Fungsi untuk menampilkan modal dengan detail ebook
+      function showModal(ebook) {
+        modal.style.display = "block";
+        modalImage.src = ebook.image_url;
+        modalTitle.textContent = ebook.name;
+        modalSku.textContent = `SKU: ${ebook.sku}`;
+        // modalPrice.textContent = `Rp. ${ebook.price}`;
+
+        const addToCartButton = document.getElementById("addToCartButton");
+        const addToCartText = addToCartButton.querySelector("p");
+
+        // Menyesuaikan teks tombol "Tambahkan" dan background jika SKU sudah ada di cart
+        if (cart.includes(ebook.sku)) {
+          addToCartText.textContent = "Sudah Ditambahkan"; // Ubah teks tombol
+          addToCartButton.classList.add("added-to-cart"); // Menambahkan kelas hijau
+          addToCartButton.disabled = true; // Nonaktifkan tombol jika sudah ada di cart
+          addToCartButton.style.backgroundColor = "#28a745"; // Hijau
+        } else {
+          addToCartText.textContent = "Tambahkan"; // Kembalikan teks tombol
+          addToCartButton.classList.remove("added-to-cart"); // Hapus kelas hijau jika belum ada
+          addToCartButton.disabled = false; // Aktifkan tombol jika belum ada di cart
+          addToCartButton.style.backgroundColor = "#007bff"; // Biru
+        }
+
+        // Event listener untuk tombol "Tambahkan"
+        addToCartButton.onclick = function () {
+          addToCart(ebook.sku); // Tambahkan SKU ebook ke cart
+        };
+
+        closeModalButton.onclick = function () {
+          closeModal();
+        };
+      }
+
+      // Function to add ebook to the cart
+      function addToCart(sku) {
+        if (!cart.includes(sku)) {
+          cart.push(sku); // Add SKU to the cart
+          updateCopyButtonState(); // Update status copyButton setelah menambah item
+          updateTotalPrice(); // Update total harga
+          updateCartBadge(); // Update the cart badge
+        }
+        renderEbooks(filteredEbooks.slice(0, itemsPerPage));
+        closeModal(); // Close the modal after adding to cart
+      }
+      // Function to update the cart badge
+      function updateCartBadge() {
+        const cartBadge = document.getElementById("cartBadge");
+        cartBadge.textContent = cart.length; // Set the badge text to the number of items in the cart
+        if (cart.length === 0) {
+          cartBadge.style.display = "none";
+        } else {
+          cartBadge.style.display = "flex"; // Show the badge if there are items
+        }
+      }
+
+      // Close modal
+      function closeModal() {
+        modal.style.display = "none";
+      }
+      // Event listener for clicking outside the modal content
+      modal.addEventListener("click", function (event) {
+        // If the clicked target is the modal background (not the content), close the modal
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+      // Function to generate pagination (Only show 1-5 pages and a link to last page)
+      function renderPagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        paginationContainer.innerHTML = ""; // Clear existing pagination
+
+        // Previous button
+        const prevButton = document.createElement("button");
+        prevButton.textContent = "Previous";
+        prevButton.className = "pagination-button";
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener("click", () => changePage(currentPage - 1));
+        paginationContainer.appendChild(prevButton);
+
+        // Page number buttons (only 1 to 5)
+        const maxPageToShow = 5;
+        let startPage = Math.max(
+          1,
+          currentPage - Math.floor(maxPageToShow / 2)
+        );
+        let endPage = Math.min(totalPages, startPage + maxPageToShow - 1);
+
+        if (endPage - startPage < maxPageToShow - 1) {
+          startPage = Math.max(1, endPage - maxPageToShow + 1);
+        }
+
+        // Loop to create page number buttons
+        for (let i = startPage; i <= endPage; i++) {
+          const pageButton = document.createElement("button");
+          pageButton.textContent = i;
+          pageButton.className = "pagination-button";
+          if (i === currentPage) pageButton.classList.add("active");
+          pageButton.addEventListener("click", () => changePage(i));
+          paginationContainer.appendChild(pageButton);
+        }
+
+        // Show "..." if there are pages after the last shown page
+        if (endPage < totalPages) {
+          const ellipsisButton = document.createElement("button");
+          ellipsisButton.textContent = "...";
+          ellipsisButton.className = "pagination-button ellipsis";
+          paginationContainer.appendChild(ellipsisButton);
+
+          // Last page button (but only if it's not already displayed)
+          if (endPage < totalPages) {
+            const lastPageButton = document.createElement("button");
+            lastPageButton.textContent = `${totalPages}`;
+            lastPageButton.className = "pagination-button";
+            lastPageButton.addEventListener("click", () =>
+              changePage(totalPages)
+            );
+            paginationContainer.appendChild(lastPageButton);
+          }
+        }
+
+        // Next button
+        const nextButton = document.createElement("button");
+        nextButton.textContent = "Next";
+        nextButton.className = "pagination-button";
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.addEventListener("click", () => changePage(currentPage + 1));
+        paginationContainer.appendChild(nextButton);
+      }
+
+      // Function to change page
+      function changePage(page) {
+        currentPage = page;
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = currentPage * itemsPerPage;
+        const pagedEbooks = filteredEbooks.slice(start, end);
+        renderEbooks(pagedEbooks);
+        renderPagination(filteredEbooks.length);
+      }
+
+      // Filter ebooks based on search input
+      searchInput.addEventListener("input", (e) => {
+        const searchQuery = e.target.value.toLowerCase();
+        filteredEbooks = jsonData.filter((ebook) =>
+          ebook.name.toLowerCase().includes(searchQuery)
+        );
+        currentPage = 1; // Reset to the first page when searching
+        renderEbooks(filteredEbooks.slice(0, itemsPerPage));
+        renderPagination(filteredEbooks.length);
+      });
+
+      function toggleBookmark(sku) {
+        if (cart.includes(sku)) {
+          // Jika ebook sudah di-bookmark, hapus dari daftar bookmark
+          cart = cart.filter((item) => item !== sku);
+          removeFromCart(sku);
+        } else {
+          // Jika ebook belum di-bookmark, tambahkan ke daftar bookmark
+          cart.push(sku);
+          updateCopyButtonState(); // Update status copyButton setelah menambah item
+          updateTotalPrice(); // Update total harga
+          updateCartBadge();
+        }
+        updateBookmarkUI(); // Update tampilan bookmark
+      }
+
+      function updateBookmarkUI() {
+        // Update semua tombol bookmark berdasarkan daftar yang sudah di-bookmark
+        const bookmarkButtons = document.querySelectorAll(".bookmark-button");
+        bookmarkButtons.forEach((button) => {
+          const sku = button.getAttribute("data-sku");
+          if (cart.includes(sku)) {
+            button.style.backgroundColor = "#28a745";
+          } else {
+            button.style.backgroundColor = "#007bff";
+          }
+        });
+      }
+      // Initial render
+      renderEbooks(filteredEbooks.slice(0, itemsPerPage));
+      renderPagination(filteredEbooks.length);
+    </script>
+  </body>
+</html>

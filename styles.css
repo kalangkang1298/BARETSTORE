@@ -1,0 +1,564 @@
+/* Sticky Search Bar */
+#searchContainer {
+    display: flex; /* Aktifkan flexbox */
+    justify-content: space-between; /* Pisahkan elemen */
+    align-items: stretch; /* Samakan tinggi semua elemen di dalam */
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #121212;
+    padding: 10px 20px;
+    z-index: 10;
+    border-bottom: 1px solid #333;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
+
+
+
+
+/* Search Input */
+#searchInput {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #333;
+    border: none;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#searchInput::placeholder {
+    color: #bbb;
+}
+
+/* Body */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #121212; /* Dark background */
+    color: #e0e0e0; /* Light text color */
+    padding-top: 10px;  /* Memberikan ruang untuk form pencarian fixed di atas */
+}
+
+/* Header */
+h1 {
+    margin: 20px;
+    color: #ffffff; /* White color for heading */
+}
+
+/* eBook Container */
+#ebookContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* eBook Card */
+.ebook-card {
+    border: 1px solid #333; /* Dark border */
+    border-radius: 5px;
+    background-color: #1e1e1e; /* Dark background for the card */
+    width: 200px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+/* eBook Image */
+.ebook-image {
+    width: 150px;
+    height: 200px;
+    object-fit: cover;
+    margin: 0 auto;
+}
+
+/* Modal Image */
+.modal-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* eBook Details */
+.ebook-details {
+    margin-top: auto;
+}
+
+.ebook-details h3 {
+    font-size: 16px;
+    margin: 10px 0 5px;
+    color: #f0f0f0; /* Light color for ebook name */
+}
+
+.ebook-details p {
+    margin: 5px 0;
+    color: #bbbbbb; /* Lighter color for price text */
+}
+
+/* Button */
+button {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Pagination */
+#paginationContainer {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .pagination-button {
+    padding: 8px 12px;
+    background-color: #444;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .pagination-button:disabled {
+    background-color: #888;
+    cursor: not-allowed;
+  }
+  
+  .pagination-button:hover:not(:disabled) {
+    background-color: #007bff;
+  }
+  
+ /* Active page */
+.pagination-button.active {
+    background-color: #007bff;
+    font-weight: bold;
+    color: white;
+  }
+  
+  /* Ellipsis button */
+  .pagination-button.ellipsis {
+    background-color: transparent;
+    color: #fff;
+    font-weight: bold;
+  }
+  
+/* Modal Styles */
+.modal {
+    display: none; /* Modal is hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7); /* Dark background */
+  }
+  
+  .modal-content {
+    background-color: #2a2a2a; /* Darker background for modal content */
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    text-align: left;
+    color: #e0e0e0; /* Light text color in modal */
+  }
+  
+  /* Close Button */
+  .close {
+    color: #ccc;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: #ffffff;
+    text-decoration: none;
+  }
+  
+
+.close:hover,
+.close:focus {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* Styling untuk badge di cartButton */
+#cartButton {
+    position: relative; /* Posisi relatif agar badge bisa diposisikan di atasnya */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    height: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    margin-left: 10px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center; /* Pusatkan ikon secara vertikal */
+    justify-content: center; /* Pusatkan ikon secara horizontal */
+  }
+
+#cartButton i {
+    font-size: 18px; /* Ukuran ikon */
+}
+
+/* Badge styling */
+#cartBadge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red; /* Warna merah */
+    color: white;
+    border-radius: 50%; /* Membuat badge menjadi bulat */
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    font-weight: bold;
+  
+    /* Secara default, sembunyikan badge ketika tidak ada item */
+    display: none;
+  }
+
+/* Cart Modal Styles */
+#cartModal {
+    display: none; /* Modal hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7); /* Dark background */
+  }
+  
+  #cartModal .modal-content {
+    background-color: #2a2a2a; /* Darker background for modal content */
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    text-align: left;
+    color: #e0e0e0; /* Light text color in modal */
+  }
+  
+  #cartModal ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  #cartModal ul li {
+    margin: 10px 0;
+  }
+  
+  #cartModal button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  
+  #cartModal button:hover {
+    background-color: #0056b3;
+  }
+  
+  #closeCartModal {
+    color: #ccc;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    float: right;
+  }
+  
+  #closeCartModal:hover {
+    color: #fff;
+  }
+  /* Styling for Cart Modal Table */
+#cartItemsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  #cartItemsTable th, #cartItemsTable td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+  }
+  
+  #cartItemsTable th {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  #cartItemsTable td {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+  }
+  
+  #cartItemsTable tr:nth-child(even) td {
+    background-color: #2a2a2a;
+  }
+  
+  #cartItemsTable tr:hover td {
+    background-color: #444;
+  }
+  /* Modal Pesan Sukses */
+.success-modal {
+    display: none; /* Modal tidak terlihat secara default */
+    position: fixed; /* Modal menggunakan posisi tetap */
+    z-index: 1001; /* Modal berada di atas semua elemen lain */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Latar belakang transparan */
+    display: flex;
+    justify-content: center; /* Center secara horizontal */
+    align-items: center; /* Center secara vertikal */
+    text-align: center;
+  }
+  
+  /* Content modal benar-benar di tengah */
+  .success-modal-content {
+    background-color: #2a2a2a;
+    border: 1px solid #888;
+    padding: 20px;
+    border-radius: 10px;
+    color: #fff;
+    position: absolute; /* Menggunakan posisi absolute */
+    top: 50%; /* Posisi dari atas */
+    left: 50%; /* Posisi dari kiri */
+    transform: translate(-50%, -50%); /* Menggeser posisi ke tengah */
+    width: 300px; /* Lebar modal */
+    text-align: center;
+  }
+  
+  /* Close Button */
+  .success-modal .close-success-modal {
+    color: #ccc;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+  }
+  
+  .success-modal .close-success-modal:hover,
+  .success-modal .close-success-modal:focus {
+    color: #fff;
+    text-decoration: none;
+  }
+/* Gaya untuk ikon centang hijau */
+.success-modal-content .check-icon {
+    font-size: 30px;
+    color: #28a745; /* Warna hijau */
+    border: 2px solid #28a745; /* Border hijau */
+    border-radius: 50%; /* Membuat border menjadi bulat */
+    padding: 10px; /* Memberikan jarak di dalam border */
+    margin-bottom: 20px; /* Memberikan jarak antara ikon dan teks */
+    display: inline-block; /* Agar ikon dan teks sejajar */
+  }
+
+  .delete-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .delete-button:hover {
+    background-color: darkred;
+  }
+  #addToCartButton {
+    display: flex;
+    align-items: center;  /* Vertikal sejajar tengah */
+    padding: 8px 16px;  /* Ukuran button yang pas */
+    background-color: #007bff;  /* Warna tombol biru */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;  /* Transisi halus saat berubah warna */
+  }
+  
+  #addToCartButton i {
+    margin-right: 8px;  /* Memberikan jarak antara ikon dan teks */
+  }
+  
+  #addToCartButton p {
+    margin: 0;  /* Menghilangkan margin default pada p */
+  }
+
+  
+/* MEDIA QUERIES FOR RESPONSIVENESS */
+
+/* Mobile (Phones) */
+@media (max-width: 600px) {
+    /* Adjust eBook cards to take full width on mobile */
+    .ebook-card {
+        width: 10%;
+        max-width: 130px;
+    }
+
+    /* Modal should take 90% width on mobile */
+    .modal-content {
+        width: 90%;
+    }
+
+    /* Pagination buttons smaller on mobile */
+    .pagination-button {
+        padding: 6px 10px;
+    }
+
+    .ebook-image {
+        width: fit-content;
+        height: 160px;
+    }
+
+    /* Adjust text size for smaller screens */
+    h1 {
+        font-size: 24px;
+    }
+
+    .ebook-details h3 {
+        font-size: 13px;
+    }
+
+    /* Search bar padding and width */
+    #searchContainer {
+        position: fixed;
+        top: 0;
+        background-color: #121212;
+        padding: 12px;
+        z-index: 10;
+        border-bottom: 1px solid #333;
+    }
+
+    #searchInput {
+        width: 80%;
+        padding: 12px;
+    }
+   
+}
+
+/* Tablet (Portrait Mode) */
+@media (max-width: 768px) {
+    /* eBook cards - two columns for tablet */
+    #ebookContainer {
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .ebook-card {
+        width: 40%; /* 2 columns */
+    }
+
+    /* Modal - take 80% width for tablets */
+    .modal-content {
+        width: 80%;
+    }
+
+    .pagination-button {
+        padding: 8px 12px;
+    }
+
+    .ebook-image {
+        width: fit-content;
+        height: 150px;
+    }
+
+    /* Adjust text size for tablets */
+    h1 {
+        font-size: 28px;
+    }
+
+    .ebook-details h3 {
+        font-size: 13px;
+    display: -webkit-box; /* Membuat elemen menjadi flexbox untuk teks */
+    -webkit-line-clamp: 2; /* Batasi hanya 2 baris */
+    -webkit-box-orient: vertical; /* Mengatur orientasi box menjadi vertikal */
+    overflow: hidden; /* Sembunyikan teks yang berlebih */
+    text-overflow: ellipsis;
+    }
+}
+
+/* Desktop (Larger Screens) */
+@media (min-width: 1024px) {
+    /* eBook cards - three to four columns for desktop */
+    #ebookContainer {
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .ebook-card {
+        width: 14%; /* 4 columns */
+    }
+
+    .pagination-button {
+        padding: 10px 14px;
+    }
+
+    .ebook-image {
+        width: fit-content;
+        height: 180px;
+    }
+    #searchInput {
+        width: 30%;
+        padding: 12px;
+    }
+    .ebook-details h3 {
+        font-size: 16px;
+    display: -webkit-box; /* Membuat elemen menjadi flexbox untuk teks */
+    -webkit-line-clamp: 2; /* Batasi hanya 2 baris */
+    -webkit-box-orient: vertical; /* Mengatur orientasi box menjadi vertikal */
+    overflow: hidden; /* Sembunyikan teks yang berlebih */
+    text-overflow: ellipsis;
+    }
+}
